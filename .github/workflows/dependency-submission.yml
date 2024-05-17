@@ -37,6 +37,7 @@ jobs:
           plugins-artifacts.gradle.org:443
           plugins.gradle.org:443
           repo.maven.apache.org:443
+          services.gradle.org:443
 
     - name: Git Checkout
       uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
