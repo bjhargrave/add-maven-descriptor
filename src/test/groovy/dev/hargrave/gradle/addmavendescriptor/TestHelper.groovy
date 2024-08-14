@@ -12,9 +12,9 @@ class TestHelper {
 	}
 
 	public static GradleRunner getGradleRunner(String version) {
-		String defaultversion = gradleVersion()
-		if (MavenVersion.parseMavenString(defaultversion).compareTo(MavenVersion.parseMavenString(version)) > 0) {
-			return runner(defaultversion)
+		String defaultVersion = gradleVersion()
+		if (MavenVersion.parseMavenString(defaultVersion) > MavenVersion.parseMavenString(version)) {
+			return runner(defaultVersion)
 		}
 		return runner(version)
 	}
@@ -29,6 +29,12 @@ class TestHelper {
 	}
 
 	private static String gradleVersion() {
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_23)) {
+			return "8.10"
+		}
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22)) {
+			return "8.8"
+		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
 			return "8.5"
 		}
