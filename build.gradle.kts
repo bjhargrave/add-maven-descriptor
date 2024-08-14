@@ -99,7 +99,7 @@ publishing {
 			}}Publication") {
 				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
 				group = PublishingPlugin.PUBLISH_TASK_GROUP
-				getDestinationFile().value(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
+				destinationFile.value(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
 				property("groupId", provider { publication.groupId })
 				property("artifactId", provider { publication.artifactId })
 				property("version", provider { publication.version })
@@ -125,7 +125,7 @@ publishing {
 					url.set("https://github.com/bjhargrave/add-maven-descriptor")
 					connection.set("scm:git:https://github.com/bjhargrave/add-maven-descriptor.git")
 					developerConnection.set("scm:git:git@github.com:bjhargrave/add-maven-descriptor.git")
-					tag.set(version.toString())
+					tag.set(version)
 				}
 				developers {
 					developer {
