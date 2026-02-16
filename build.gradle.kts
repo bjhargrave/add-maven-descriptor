@@ -64,7 +64,7 @@ configurations {
 
 // Dependencies
 dependencies {
-	testImplementation("org.junit.jupiter:junit-jupiter:5.14.2")
+	testImplementation("org.junit.jupiter:junit-jupiter:5.14.3")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.spockframework:spock-core:2.4-groovy-3.0")
 	testImplementation("biz.aQute.bnd:biz.aQute.bndlib:6.4.1")
