@@ -1,20 +1,20 @@
-name: 'CI Build'
+name: "CI Build"
 
 on:
   push:
     branches-ignore:
-    - 'dependabot/**'
+      - 'dependabot/**'
     paths:
-    - '**'
-    - '!docs/**'
-    - '!.github/**'
-    - '.github/**/*ci*'
+      - '**'
+      - '!docs/**'
+      - '!.github/**'
+      - '.github/**/*ci*'
   pull_request:
     paths:
-    - '**'
-    - '!docs/**'
-    - '!.github/**'
-    - '.github/**/*ci*'
+      - '**'
+      - '!docs/**'
+      - '!.github/**'
+      - '.github/**/*ci*'
 
 env:
   LC_ALL: en_US.UTF-8
@@ -34,48 +34,51 @@ jobs:
       fail-fast: ${{ (github.repository != 'bjhargrave/add-maven-descriptor') || ((github.ref != 'refs/heads/main') && (github.ref != 'refs/heads/release')) || (github.event_name == 'pull_request') }}
       matrix:
         os:
-        - 'ubuntu-latest'
-        java:
-        - '8'
-        - '11'
-        - '17'
-        - '21'
-    name: Build JDK${{ matrix.java }} ${{ matrix.os }}
+          - 'ubuntu-latest'
+        build:
+          - java: '17'
+        test:
+          - java: '17'
+          - java: '21'
+          - java: '25'
+    name: "Build JDK${{ matrix.build.java }} / Test JDK${{ matrix.test.java }}"
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Harden Runner
-      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
-      with:
-        disable-sudo-and-containers: true
-        egress-policy: block
-        allowed-endpoints: >
-          downloads.gradle.org:443
-          github.com:443
-          jcenter.bintray.com:443
-          objects.githubusercontent.com:443
-          plugins-artifacts.gradle.org:443
-          plugins.gradle.org:443
-          release-assets.githubusercontent.com:443
-          repo.maven.apache.org:443
-          services.gradle.org:443
+      - name: "Harden Runner"
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: block
+          allowed-endpoints: >
+            downloads.gradle.org:443
+            github.com:443
+            jcenter.bintray.com:443
+            objects.githubusercontent.com:443
+            plugins-artifacts.gradle.org:443
+            plugins.gradle.org:443
+            release-assets.githubusercontent.com:443
+            repo.maven.apache.org:443
+            services.gradle.org:443
 
-    - name: Git Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        persist-credentials: false
+      - name: "Git Checkout"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-    - name: Setup Java ${{ matrix.java }}
-      uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
-      with:
-        distribution: 'temurin'
-        java-version: ${{ matrix.java }}
+      - name: "Setup Java"
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: |
+            ${{ matrix.test.java != matrix.build.java && matrix.test.java || '' }}
+            ${{ matrix.build.java }}
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
-      with:
-        cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - name: "Setup Gradle"
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-    - name: Build
-      id: build
-      run: |
-        ./gradlew build
+      - name: "Build"
+        id: build
+        run: |
+          ./gradlew build -Ptest.target="${{ matrix.test.java }}"

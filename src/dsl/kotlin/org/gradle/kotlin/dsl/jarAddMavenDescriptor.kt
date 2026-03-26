@@ -6,7 +6,7 @@ import dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorTaskExtension
 import org.gradle.api.tasks.bundling.Jar
 
 val Jar.addMavenDescriptor: AddMavenDescriptorTaskExtension
-    get() = the()
+	get() = extensions.getByName(AddMavenDescriptorTaskExtension.NAME) as AddMavenDescriptorTaskExtension
 
 fun Jar.addMavenDescriptor(configure: AddMavenDescriptorTaskExtension.() -> Unit) =
-    extensions.configure(AddMavenDescriptorTaskExtension.NAME, configure)
+	extensions.configure(AddMavenDescriptorTaskExtension.NAME, configure)

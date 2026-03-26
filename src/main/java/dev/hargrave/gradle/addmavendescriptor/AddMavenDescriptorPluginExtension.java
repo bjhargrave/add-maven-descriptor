@@ -112,11 +112,6 @@ public class AddMavenDescriptorPluginExtension {
 		ProjectLayout layout = project.getLayout();
 		ProviderFactory providers = project.getProviders();
 
-		@SuppressWarnings("deprecation")
-		BiConsumer<WriteProperties, Provider<RegularFile>> setDestinationFile = isGradleCompatible("8.1") ? //
-			(task, destinationFile) -> task.getDestinationFile()
-				.value(destinationFile) : //
-			(task, destinationFile) -> task.setOutputFile(destinationFile);
 		// Register generatePomProperties task for each MavenPublication
 		publications().configureEach(publication -> {
 			String pomPropertiesTaskName = "generatePomPropertiesFor" + capitalize(publication.getName()) + "Publication";
@@ -124,7 +119,7 @@ public class AddMavenDescriptorPluginExtension {
 				String publicationName = publication.getName();
 				task.setDescription("Generates the Maven pom.properties file for publication '" + publicationName + "'.");
 				task.setGroup(PublishingPlugin.PUBLISH_TASK_GROUP);
-				setDestinationFile.accept(task, layout.getBuildDirectory()
+                task.getDestinationFile().value(layout.getBuildDirectory()
 					.file("publications/" + publicationName + "/pom-default.properties"));
 				task.property("groupId", providers.provider(publication::getGroupId));
 				task.property("artifactId", providers.provider(publication::getArtifactId));

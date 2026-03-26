@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-import java.util.*
+import java.util.Locale
 
 plugins {
 	groovy
@@ -10,28 +10,29 @@ plugins {
 }
 
 interface Injected {
-	@get:Inject val fs: FileSystemOperations
+	@get:Inject
+	val fs: FileSystemOperations
 }
 
 group = "dev.hargrave"
 version = "1.2.0-SNAPSHOT"
+val javaTarget = JavaLanguageVersion.of(17)
+val testTarget = findProperty("test.target")?.let {
+	JavaLanguageVersion.of(it.toString())
+} ?: JavaLanguageVersion.current()
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
 	withJavadocJar()
 	withSourcesJar()
 }
 
-val localrepo: String? = System.getProperty("maven.repo.local")
-localrepo?.let {
+val maven_repo_local = System.getProperty("maven.repo.local")?.let {
 	var rootGradle: Gradle = gradle
 	while (rootGradle.parent != null) {
 		rootGradle = rootGradle.parent!!
 	}
-	extra.set("maven_repo_local", rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath)
+	rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath
 }
-val maven_repo_local: String? by extra
 
 repositories {
 	mavenCentral()
@@ -64,23 +65,23 @@ configurations {
 
 // Dependencies
 dependencies {
-	testImplementation("org.junit.jupiter:junit-jupiter:5.14.3")
+	testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	testImplementation("org.spockframework:spock-core:2.4-groovy-3.0")
-	testImplementation("biz.aQute.bnd:biz.aQute.bndlib:6.4.1")
+	testImplementation("org.spockframework:spock-core:2.4-groovy-4.0")
+	testImplementation("biz.aQute.bnd:biz.aQute.bndlib:7.2.3")
 }
 
 // Gradle plugin descriptions
 gradlePlugin {
-	website.set("https://github.com/bjhargrave/add-maven-descriptor")
-	vcsUrl.set("https://github.com/bjhargrave/add-maven-descriptor.git")
+	website = "https://github.com/bjhargrave/add-maven-descriptor"
+	vcsUrl = "https://github.com/bjhargrave/add-maven-descriptor.git"
 	plugins {
 		create("AddMavenDescriptor") {
 			id = "dev.hargrave.addmavendescriptor"
 			implementationClass = "dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPlugin"
 			displayName = "Add Maven Descriptor Plugin"
 			description = "Gradle Plugin to add Maven descriptor information to built jars."
-			tags.set(listOf("maven", "pom"))
+			tags = listOf("maven", "pom")
 		}
 	}
 }
@@ -90,13 +91,17 @@ publishing {
 		// Main plugin publication
 		create<MavenPublication>("pluginMaven") {
 			pom {
-				name.set(artifactId)
-				description.set("Add Maven Descriptor")
+				name = artifactId
+				description = "Add Maven Descriptor"
 			}
 			val publication = this
-			tasks.register<WriteProperties>("generatePomPropertiesFor${publication.name.replaceFirstChar {
-				it.titlecase(Locale.ROOT)
-			}}Publication") {
+			tasks.register<WriteProperties>(
+				"generatePomPropertiesFor${
+					publication.name.replaceFirstChar {
+						it.titlecase(Locale.ROOT)
+					}
+				}Publication"
+			) {
 				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
 				group = PublishingPlugin.PUBLISH_TASK_GROUP
 				destinationFile.value(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
@@ -108,35 +113,35 @@ publishing {
 		// Configure pom metadata
 		withType<MavenPublication> {
 			pom {
-				url.set("https://github.com/bjhargrave/add-maven-descriptor")
+				url = "https://github.com/bjhargrave/add-maven-descriptor"
 				organization {
-					name.set("BJ Hargrave")
-					url.set("https://github.com/bjhargrave")
+					name = "BJ Hargrave"
+					url = "https://github.com/bjhargrave"
 				}
 				licenses {
 					license {
-						name.set("Apache-2.0")
-						url.set("https://opensource.org/licenses/Apache-2.0")
-						distribution.set("repo")
-						comments.set("This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0.")
+						name = "Apache-2.0"
+						url = "https://opensource.org/licenses/Apache-2.0"
+						distribution = "repo"
+						comments = "This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0."
 					}
 				}
 				scm {
-					url.set("https://github.com/bjhargrave/add-maven-descriptor")
-					connection.set("scm:git:https://github.com/bjhargrave/add-maven-descriptor.git")
-					developerConnection.set("scm:git:git@github.com:bjhargrave/add-maven-descriptor.git")
-					tag.set(version)
+					url = "https://github.com/bjhargrave/add-maven-descriptor"
+					connection = "scm:git:https://github.com/bjhargrave/add-maven-descriptor.git"
+					developerConnection = "scm:git:git@github.com:bjhargrave/add-maven-descriptor.git"
+					tag = version
 				}
 				developers {
 					developer {
-						id.set("bjhargrave")
-						name.set("BJ Hargrave")
-						email.set("bj@hargrave.dev")
-						url.set("https://github.com/bjhargrave")
-						organization.set("IBM")
-						organizationUrl.set("https://developer.ibm.com")
-						roles.set(setOf("developer"))
-						timezone.set("America/New_York")
+						id = "bjhargrave"
+						name = "BJ Hargrave"
+						email = "bj@hargrave.dev"
+						url = "https://github.com/bjhargrave"
+						organization = "IBM"
+						organizationUrl = "https://developer.ibm.com"
+						roles = setOf("developer")
+						timezone = "America/New_York"
 					}
 				}
 			}
@@ -144,10 +149,14 @@ publishing {
 	}
 }
 
+tasks.withType<JavaCompile>().configureEach {
+	options.release = javaTarget.asInt()
+}
+
 // Use same jvm target for kotlin code as for java code
 tasks.withType<KotlinCompilationTask<KotlinJvmCompilerOptions>>().configureEach {
 	compilerOptions {
-		jvmTarget.set(JvmTarget.fromTarget(java.targetCompatibility.toString()))
+		jvmTarget = JvmTarget.fromTarget(javaTarget.toString())
 	}
 }
 
@@ -201,13 +210,21 @@ tasks.named<Jar>("sourcesJar") {
 
 val testresourcesOutput = layout.buildDirectory.dir("testresources")
 
+// Use same jvm target for test groovy code as for test execution
+tasks.compileTestGroovy {
+	targetCompatibility = testTarget.toString()
+}
+
 // Configure test
 tasks.test {
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = testTarget
+	}
 	useJUnitPlatform()
 	reports {
 		junitXml.apply {
 			isOutputPerTestCase = true
-			mergeReruns.set(true)
+			mergeReruns = true
 		}
 	}
 	testLogging {
@@ -240,6 +257,6 @@ tasks.named<Delete>("cleanTest") {
 }
 
 tasks.withType<ValidatePlugins>().configureEach {
-	failOnWarning.set(true)
-	enableStricterValidation.set(true)
+	failOnWarning = true
+	enableStricterValidation = true
 }
