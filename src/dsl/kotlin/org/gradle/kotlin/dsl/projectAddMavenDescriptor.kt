@@ -6,7 +6,7 @@ import dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPluginExtension
 import org.gradle.api.Project
 
 val Project.addMavenDescriptor: AddMavenDescriptorPluginExtension
-    get() = the()
+	get() = extensions.getByName(AddMavenDescriptorPluginExtension.NAME) as AddMavenDescriptorPluginExtension
 
 fun Project.addMavenDescriptor(configure: AddMavenDescriptorPluginExtension.() -> Unit) =
-    extensions.configure(AddMavenDescriptorPluginExtension.NAME, configure)
+	extensions.configure(AddMavenDescriptorPluginExtension.NAME, configure)

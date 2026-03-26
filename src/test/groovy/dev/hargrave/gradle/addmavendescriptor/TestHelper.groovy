@@ -5,7 +5,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.GradleRunner
 
 class TestHelper {
-	private TestHelper() { }
+	private TestHelper() {}
 
 	public static GradleRunner getGradleRunner() {
 		return runner(gradleVersion())
@@ -29,6 +29,15 @@ class TestHelper {
 	}
 
 	private static String gradleVersion() {
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_26)) {
+			return "9.4.0"
+		}
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)) {
+			return "9.1.0"
+		}
+		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_24)) {
+			return "8.14"
+		}
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_23)) {
 			return "8.10"
 		}
@@ -38,18 +47,6 @@ class TestHelper {
 		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
 			return "8.5"
 		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_20)) {
-			return "8.3"
-		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_19)) {
-			return "7.6"
-		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_18)) {
-			return "7.5"
-		}
-		if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
-			return "7.3.2"
-		}
-		return "6.1"
+		return "8.3"
 	}
 }
