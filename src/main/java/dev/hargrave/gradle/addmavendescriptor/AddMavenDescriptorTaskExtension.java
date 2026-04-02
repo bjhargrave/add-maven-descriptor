@@ -2,15 +2,17 @@ package dev.hargrave.gradle.addmavendescriptor;
 
 import static dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPluginExtension.capitalize;
 
-import java.util.Collections;
-
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.Transformer;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskOutputs;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
 /**
@@ -92,21 +94,28 @@ public class AddMavenDescriptorTaskExtension {
 	 * @param task The task to configure.
 	 */
 	private void configureTask(AbstractArchiveTask task) {
-		// Maps task names to a TaskProvider
-		Transformer<Provider<?>, String> taskProvider = task.getProject()
-			.getTasks()::named;
+		Project project = task.getProject();
+
+		// Map task names to their outputs
+		TaskContainer tasks = project.getTasks();
+		Transformer<Provider<FileCollection>, String> taskOutputs = name -> tasks.named(name)
+				.map(Task::getOutputs)
+				.map(TaskOutputs::getFiles);
 
 		// Jar location to store maven descriptor
 		Provider<String> metaInfMaven = metaInfMaven().orElse("");
 
+		// Empty FileCollection provider if no publication selected
+		Provider<? extends FileCollection> fileCollectionProvider = project.getProviders().provider(project.getObjects()::fileCollection);
+
 		// Copy pom.xml into jar
-		task.into(metaInfMaven, copySpec -> copySpec.from(generatePomFileTaskName().flatMap(taskProvider)
-				.orElse(Collections.emptyList()))
+		task.into(metaInfMaven, copySpec -> copySpec.from(generatePomFileTaskName().flatMap(taskOutputs)
+				.orElse(fileCollectionProvider))
 			.rename(name -> "pom.xml"));
 
 		// Copy pom.properties into jar
-		task.into(metaInfMaven, copySpec -> copySpec.from(generatePomPropertiesTaskName().flatMap(taskProvider)
-				.orElse(Collections.emptyList()))
+		task.into(metaInfMaven, copySpec -> copySpec.from(generatePomPropertiesTaskName().flatMap(taskOutputs)
+				.orElse(fileCollectionProvider))
 			.rename(name -> "pom.properties"));
 	}
 

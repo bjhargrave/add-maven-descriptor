@@ -1,3 +1,4 @@
+import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -77,6 +78,11 @@ gradlePlugin {
 			description = "Gradle Plugin to add Maven descriptor information to built jars."
 			tags = listOf("maven", "pom")
 			implementationClass = "dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPlugin"
+			compatibility {
+				features {
+					configurationCache = true
+				}
+			}
 		}
 	}
 }
