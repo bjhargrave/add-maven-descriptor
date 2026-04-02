@@ -1,3 +1,4 @@
+import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -9,11 +10,6 @@ plugins {
 	id("com.gradle.plugin-publish")
 }
 
-interface Injected {
-	@get:Inject
-	val fs: FileSystemOperations
-}
-
 group = "dev.hargrave"
 version = "1.3.0-SNAPSHOT"
 val javaTarget = JavaLanguageVersion.of(17)
@@ -21,17 +17,17 @@ val testTarget = findProperty("test.target")?.let {
 	JavaLanguageVersion.of(it.toString())
 } ?: JavaLanguageVersion.current()
 
-java {
-	withJavadocJar()
-	withSourcesJar()
-}
-
 val maven_repo_local = System.getProperty("maven.repo.local")?.let {
 	var rootGradle: Gradle = gradle
 	while (rootGradle.parent != null) {
 		rootGradle = rootGradle.parent!!
 	}
 	rootGradle.startParameter.currentDir.resolve(it).normalize().absolutePath
+}
+
+java {
+	withJavadocJar()
+	withSourcesJar()
 }
 
 repositories {
@@ -82,6 +78,11 @@ gradlePlugin {
 			description = "Gradle Plugin to add Maven descriptor information to built jars."
 			tags = listOf("maven", "pom")
 			implementationClass = "dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPlugin"
+			compatibility {
+				features {
+					configurationCache = true
+				}
+			}
 		}
 	}
 }
@@ -89,7 +90,7 @@ gradlePlugin {
 publishing {
 	publications {
 		// Main plugin publication
-		create<MavenPublication>("pluginMaven") {
+		register<MavenPublication>("pluginMaven") {
 			pom {
 				name = artifactId
 				description = "Add Maven Descriptor"
@@ -208,11 +209,15 @@ tasks.named<Jar>("sourcesJar") {
 	from(dsl.allSource)
 }
 
-val testresourcesOutput = layout.buildDirectory.dir("testresources")
-
 // Use same jvm target for test groovy code as for test execution
 tasks.compileTestGroovy {
 	targetCompatibility = testTarget.toString()
+}
+
+// Sync testresources folder to build dir
+val syncTestResources = tasks.register<Sync>("syncTestResources") {
+	from(layout.projectDirectory.dir("testresources"))
+	into(layout.buildDirectory.dir("testresources"))
 }
 
 // Configure test
@@ -233,27 +238,15 @@ tasks.test {
 			events("STANDARD_OUT", "STANDARD_ERROR", "STARTED", "FAILED", "PASSED", "SKIPPED")
 		}
 	}
-	val testresourcesSource = layout.projectDirectory.dir("testresources")
-	inputs.files(testresourcesSource).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testresources")
+	inputs.files(syncTestResources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName(syncTestResources.name)
 	systemProperty("org.gradle.warning.mode", gradle.startParameter.warningMode.name.lowercase(Locale.ROOT))
 	maven_repo_local?.let {
 		systemProperty("maven.repo.local", it)
 	}
-	val injected = objects.newInstance<Injected>()
-	doFirst {
-		// copy test resources into build dir
-		injected.fs.delete {
-			delete(testresourcesOutput)
-		}
-		injected.fs.copy {
-			from(testresourcesSource)
-			into(testresourcesOutput)
-		}
-	}
 }
 
 tasks.named<Delete>("cleanTest") {
-	delete(testresourcesOutput)
+	delete(syncTestResources)
 }
 
 tasks.withType<ValidatePlugins>().configureEach {
