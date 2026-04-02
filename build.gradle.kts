@@ -15,7 +15,7 @@ interface Injected {
 }
 
 group = "dev.hargrave"
-version = "1.2.0-SNAPSHOT"
+version = "1.3.0-SNAPSHOT"
 val javaTarget = JavaLanguageVersion.of(17)
 val testTarget = findProperty("test.target")?.let {
 	JavaLanguageVersion.of(it.toString())
