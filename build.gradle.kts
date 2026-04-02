@@ -76,12 +76,12 @@ gradlePlugin {
 	website = "https://github.com/bjhargrave/add-maven-descriptor"
 	vcsUrl = "https://github.com/bjhargrave/add-maven-descriptor.git"
 	plugins {
-		create("AddMavenDescriptor") {
+		register("AddMavenDescriptor") {
 			id = "dev.hargrave.addmavendescriptor"
-			implementationClass = "dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPlugin"
 			displayName = "Add Maven Descriptor Plugin"
 			description = "Gradle Plugin to add Maven descriptor information to built jars."
 			tags = listOf("maven", "pom")
+			implementationClass = "dev.hargrave.gradle.addmavendescriptor.AddMavenDescriptorPlugin"
 		}
 	}
 }
