@@ -14,7 +14,7 @@ The simplest way to use the plugin is to apply to your project.
 
 ```groovy
 plugins {
-  id "dev.hargrave.addmavendescriptor" version "1.2.0"
+  id "dev.hargrave.addmavendescriptor" version "1.3.0"
 }
 ```
 
