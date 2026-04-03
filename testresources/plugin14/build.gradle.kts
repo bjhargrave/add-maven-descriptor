@@ -7,7 +7,7 @@ plugins {
 	id("dev.hargrave.addmavendescriptor")
 	groovy
 	`kotlin-dsl`
-	id("com.gradle.plugin-publish") version "1.2.0"
+	id("com.gradle.plugin-publish")
 }
 
 group = "test.addmavendescriptor.gradle"
