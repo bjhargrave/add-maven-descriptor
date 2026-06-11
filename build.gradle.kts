@@ -64,7 +64,7 @@ dependencies {
 	testImplementation("org.junit.jupiter:junit-jupiter:6.1.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.spockframework:spock-core:2.4-groovy-4.0")
-	testImplementation("biz.aQute.bnd:biz.aQute.bndlib:7.2.3")
+	testImplementation("biz.aQute.bnd:biz.aQute.bndlib:7.3.0")
 }
 
 // Gradle plugin descriptions
