@@ -12,8 +12,8 @@ plugins {
 
 group = "dev.hargrave"
 version = "1.4.0-SNAPSHOT"
-val javaTarget = JavaLanguageVersion.of(17)
-val testTarget = findProperty("test.target")?.let {
+val javaTarget: JavaLanguageVersion = JavaLanguageVersion.of(17)
+val testTarget: JavaLanguageVersion = findProperty("test.target")?.let {
 	JavaLanguageVersion.of(it.toString())
 } ?: JavaLanguageVersion.current()
 
@@ -35,7 +35,7 @@ repositories {
 }
 
 // SourceSet for Kotlin DSL code so that it can be built after the main SourceSet
-val dsl: SourceSet by sourceSets.creating
+val dsl: SourceSet = sourceSets.create("dsl")
 sourceSets {
 	dsl.apply {
 		compileClasspath += main.get().output
