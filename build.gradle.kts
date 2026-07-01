@@ -216,6 +216,8 @@ tasks.compileTestGroovy {
 
 // Sync testresources folder to build dir
 val syncTestResources = tasks.register<Sync>("syncTestResources") {
+	description = "Copy testresources to the build directory"
+	group = LifecycleBasePlugin.VERIFICATION_GROUP
 	from(layout.projectDirectory.dir("testresources"))
 	into(layout.buildDirectory.dir("testresources"))
 }
