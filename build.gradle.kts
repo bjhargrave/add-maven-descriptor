@@ -87,30 +87,15 @@ gradlePlugin {
 	}
 }
 
+val publication = publishing.publications.register<MavenPublication>("pluginMaven") {
+	pom {
+		name = artifactId
+		description = "Add Maven Descriptor"
+	}
+}
+
 publishing {
 	publications {
-		// Main plugin publication
-		register<MavenPublication>("pluginMaven") {
-			pom {
-				name = artifactId
-				description = "Add Maven Descriptor"
-			}
-			val publication = this
-			tasks.register<WriteProperties>(
-				"generatePomPropertiesFor${
-					publication.name.replaceFirstChar {
-						it.titlecase(Locale.ROOT)
-					}
-				}Publication"
-			) {
-				description = "Generates the Maven pom.properties file for publication '${publication.name}'."
-				group = PublishingPlugin.PUBLISH_TASK_GROUP
-				destinationFile.value(layout.buildDirectory.file("publications/${publication.name}/pom-default.properties"))
-				property("groupId", provider { publication.groupId })
-				property("artifactId", provider { publication.artifactId })
-				property("version", provider { publication.version })
-			}
-		}
 		// Configure pom metadata
 		withType<MavenPublication> {
 			pom {
@@ -149,6 +134,28 @@ publishing {
 		}
 	}
 }
+
+val generatePomProperties = tasks.register<WriteProperties>(
+	"generatePomPropertiesFor${
+		publication.name.replaceFirstChar {
+			it.titlecase(Locale.ROOT)
+		}
+	}Publication"
+) {
+	description = "Generates the Maven pom.properties file for publication '${publication.name}'."
+	group = PublishingPlugin.PUBLISH_TASK_GROUP
+	destinationFile = layout.buildDirectory.file("publications/${publication.name}/pom-default.properties")
+	property("groupId", publication.map { it.groupId })
+	property("artifactId", publication.map { it.artifactId })
+	property("version", publication.map { it.version })
+}
+
+val generatePomFile = tasks.named(
+	"generatePomFileFor${
+		publication.name.replaceFirstChar {
+			it.titlecase(Locale.ROOT)
+		}
+	}Publication")
 
 tasks.withType<JavaCompile>().configureEach {
 	options.release = javaTarget.asInt()
@@ -189,17 +196,17 @@ tasks.jar {
 	// Include dsl SourceSet
 	from(dsl.output)
 	// META-INF/maven folder
-	val metaInfMaven = publishing.publications.named<MavenPublication>("pluginMaven").map {
+	val metaInfMaven = publication.map {
 		"META-INF/maven/${it.groupId}/${it.artifactId}"
 	}
 	// Include generated pom.xml file
 	into(metaInfMaven) {
-		from(tasks.named("generatePomFileForPluginMavenPublication"))
+		from(generatePomFile)
 		rename { "pom.xml" }
 	}
 	// Include generated pom.properties file
 	into(metaInfMaven) {
-		from(tasks.named("generatePomPropertiesForPluginMavenPublication"))
+		from(generatePomProperties)
 		rename { "pom.properties" }
 	}
 }
@@ -216,6 +223,8 @@ tasks.compileTestGroovy {
 
 // Sync testresources folder to build dir
 val syncTestResources = tasks.register<Sync>("syncTestResources") {
+	description = "Copy testresources to the build directory"
+	group = LifecycleBasePlugin.VERIFICATION_GROUP
 	from(layout.projectDirectory.dir("testresources"))
 	into(layout.buildDirectory.dir("testresources"))
 }
