@@ -3,7 +3,7 @@ name: "Dependabot PR auto-merge"
 on:
   pull_request_target:
     branches:
-      - 'dependabot/**'
+      - 'main'
 
 env:
   LC_ALL: en_US.UTF-8
