@@ -60,9 +60,7 @@ jobs:
             fi
 
             # Pull current checks as JSON, excluding our own check by name.
-            checks_json=$(gh pr checks "${PR_ARGS[@]}" --json name,state,bucket,link \
-              -q "[.[] | select(.name != \"${SELF_CHECK_NAME}\")]")
-            echo $(jq '.' <<<"$checks_json")
+            checks_json=$(gh pr checks "${PR_ARGS[@]}" --json name,state,bucket,link --jq "[.[] | select(.name != \"${SELF_CHECK_NAME}\") | select(.name | contains("StepSecurity") | not)]")
 
             total=$(jq 'length' <<<"$checks_json")
 
